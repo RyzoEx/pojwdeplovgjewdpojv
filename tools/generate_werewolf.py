@@ -128,7 +128,7 @@ for i in range(5):
     sym_cube(torso, [0.75, y, -3.65], [w, 0.5, 0.75], "rib")
     sym_cube(torso, [5.25, y - 0.25, -2.75], [0.5, 0.5, 5.0], "rib")
 cube(torso, [-0.5, H + 8, -3.6], [1, 6.5, 0.6], "rib")
-sym_cube(torso, [0.5, H + 15, -3.6], [5, 0.75, 0.75], "rib")
+sym_cube(torso, [0.5, H + 15, -3.6], [4.75, 0.75, 0.75], "rib")
 cube(torso, [-6.75, H + 13.5, -1.5], [13.5, 4.5, 5.5], "fur", ragged="bottom")
 cube(torso, [-5, H + 7, 2.5], [10, 7.5, 1.75], "fur", ragged="all")
 for i in range(3):
@@ -152,7 +152,7 @@ head = bone("head", "head_look", [0, F, -0.5], [6, 0, 0])
 EYE_O = [0.85, F + 2.75, -5.9]
 EYE_S = [2.5, 1.5, 0.5]
 cube(head, [-4.25, F - 1, -5.5], [8.5, 8, 7.5], "skull")
-cube(head, [-4, F + 4.5, -6], [8, 1, 0.75], "skin_brow")
+cube(head, [-4, F + 4.5, -6.125], [8, 1, 0.875], "skin_brow")
 sym_cube(head, [0.75, F + 4.25, -6.0], [2.75, 0.4, 0.6], "skin_lid")
 sym_cube(head, [0.75, F + 2.35, -5.8], [2.75, 0.4, 0.4], "skin_bag")
 sym_cube(head, [3.25, F + 0.75, -5.75], [1.25, 1.75, 3], "skin_cheek")
@@ -160,10 +160,10 @@ cube(head, [-2.5, F + 0.5, -10.5], [5, 2.5, 5], "snout")
 cube(head, [-1, F + 3.0, -9.5], [2, 0.5, 4], "skin")
 cube(head, [-1, F + 1.25, -11], [2, 2, 1.25], "nose")
 cube(head, [-2.4, F - 0.5, -10.25], [4.8, 1, 4.75], "teeth_upper")
-cube(head, [-2.2, F - 2, -9.75], [4.4, 1.5, 4.5], "mouth")
-sym_cube(head, [4, F - 1.5, -5.25], [1, 3, 4], "fur", ragged="all")
+cube(head, [-2.25, F - 2, -9.75], [4.5, 1.5, 4.5], "mouth")
+sym_cube(head, [4, F - 1.5, -5.25], [1, 3, 2], "fur", ragged="all")
 cube(head, [-4.5, F + 5.5, -5.75], [9, 2, 8], "hair")
-cube(head, [-4.25, F + 4.75, -5.85], [8.5, 1.25, 0.5], "hair", ragged="bottom")
+cube(head, [-4.125, F + 4.75, -5.85], [8.25, 1.25, 0.5], "hair", ragged="bottom")
 
 eye_l = bone("eye_l", "head", [2.1, F + 3.5, -5.6])
 eye_r = bone("eye_r", "head", [-2.1, F + 3.5, -5.6])
@@ -172,8 +172,8 @@ cube(eye_r, mirror_vec(EYE_O, EYE_S), EYE_S, "eye")
 
 jaw = bone("jaw", "head", [0, F - 0.5, -4.5])
 cube(jaw, [-2.4, F - 2.75, -10.25], [4.8, 1.75, 5.25], "jaw")
-cube(jaw, [-2.2, F - 1.5, -10], [4.4, 1, 4.5], "teeth_lower")
-cube(jaw, [-1.4, F - 1.6, -9], [2.8, 0.5, 4], "tongue")
+cube(jaw, [-2.125, F - 1.5, -10], [4.25, 1, 4.5], "teeth_lower")
+cube(jaw, [-1.4, F - 1.6, -9], [2.8, 0.5, 3.75], "tongue")
 cube(jaw, [-1.5, F - 3.25, -10.1], [3, 0.75, 2.25], "skin_chin")
 
 ear_l = bone("ear_l", "head", [3, F + 7, -1.5], [-10, 0, 18])
@@ -183,7 +183,7 @@ cube(ear_r, [-4.5, F + 7, -2.25], [2.5, 3, 1], "ear", torn=True)
 
 hair_back = bone("hair_back", "head", [0, F + 6.5, 2])
 cube(hair_back, [-4.25, F - 5.5, 1.75], [8.5, 12.5, 0.75], "hair", ragged="bottom")
-sym_cube(hair_back, [4.25, F - 3.5, -3.25], [0.6, 10, 5.25], "hair", ragged="bottom")
+sym_cube(hair_back, [4.25, F - 3.5, -3.25], [0.6, 10, 5.75], "hair", ragged="bottom")
 
 # arms: far too long, human hands with elongated fingers
 arm = bone_pair("arm", "torso", [6, H + 14.5, 0.5], [-40, 0, -4])
@@ -196,8 +196,8 @@ cube_pair(forearm, [5, H - 4.75, -0.75], [2.5, 1, 2.5], "rib")
 cube_pair(forearm, [5.375, H - 2, 1.5], [1.75, 6, 0.75], "fur", ragged="all")
 hand = bone_pair("hand", "forearm", [6.25, H - 4.5, 0.5], [0, 0, 0])
 cube_pair(hand, [5.5, H - 8.25, -1.25], [1.5, 3.75, 3.5], "skin_hand")
-cube_pair(hand, [5.4, H - 8.75, -1.25], [1.7, 0.75, 3.5], "skin_knuckle")
-FINGER_Z = [-0.75, 0.125, 1.0, 1.75]
+cube_pair(hand, [5.4, H - 8.75, -1.375], [1.7, 0.75, 3.75], "skin_knuckle")
+FINGER_Z = [-0.8125, 0.0625, 0.9375, 1.8125]  # 0.125 gaps so neighbours never touch
 FINGER_A = [4.0, 4.5, 4.25, 3.25]
 FINGER_B = [3.0, 3.5, 3.25, 2.5]
 for i, zc in enumerate(FINGER_Z):
@@ -206,8 +206,8 @@ for i, zc in enumerate(FINGER_Z):
     fa = bone_pair(f"finger{i}a", "hand", [6.25, y0, zc], [0, 0, 8])
     cube_pair(fa, [5.875, y0 - la, zc - 0.375], [0.75, la, 0.75], "skin_finger")
     fb = bone_pair(f"finger{i}b", f"finger{i}a", [6.25, y0 - la, zc], [0, 0, 14])
-    cube_pair(fb, [5.9, y0 - la - lb, zc - 0.35], [0.7, lb, 0.7], "skin_finger")
-    cube_pair(fb, [5.95, y0 - la - lb - 1.25, zc - 0.3], [0.6, 1.25, 0.6], "nail")
+    cube_pair(fb, [5.925, y0 - la - lb, zc - 0.325], [0.65, lb, 0.65], "skin_finger")
+    cube_pair(fb, [5.975, y0 - la - lb - 1.25, zc - 0.275], [0.55, 1.25, 0.55], "nail")
 thumb = bone_pair("thumb", "hand", [6, H - 6.75, -1.25], [-20, 0, 10])
 cube_pair(thumb, [5.625, H - 10.25, -1.625], [0.75, 3.5, 0.75], "skin_finger")
 cube_pair(thumb, [5.7, H - 11.25, -1.55], [0.6, 1, 0.6], "nail")
@@ -215,6 +215,7 @@ cube_pair(thumb, [5.7, H - 11.25, -1.55], [0.6, 1, 0.6], "nail")
 # legs: digitigrade wolf legs
 leg = bone_pair("leg", "body", [3, H, 0], [LEG_ROT[0], 0, -3])
 cube_pair(leg, [1, H - 8.5, -2.75], [4.5, 9, 5], "fur", ragged="bottom")
+cube_pair(leg, [1.5, H - 8, -2.25], [3.5, 8, 4], "skin_patchy")  # core, seen through the open fur hem
 shin = bone_pair("shin", "leg", [3.25, H - L_THIGH, 0], [LEG_ROT[1], 0, 0])
 cube_pair(shin, [1.75, H - L_THIGH - L_SHIN, -1.25], [3, L_SHIN, 3], "fur")
 cube_pair(shin, [2, H - 12, 1.5], [2.5, 4, 1], "fur", ragged="all")
@@ -628,13 +629,20 @@ FACE_DIMS = {
 }
 
 
+def open_caps(c):
+    """Caps of cubes whose side edges are cut into strands. Left solid they read as a flat plate
+    floating past the strand tips, so they are omitted (GeckoLib skips faces with no UV)."""
+    rag = "top" if c.opts.get("torn") else c.opts.get("ragged")
+    return {"bottom": {"down"}, "top": {"up"}, "all": {"up", "down"}}.get(rag, set())
+
+
 def pack():
     rects = []
     for b in bones:
         for c in b.cubes:
             for face, (iw, ih) in FACE_DIMS.items():
                 w, h = c.size[iw], c.size[ih]
-                if w <= 0 or h <= 0:
+                if w <= 0 or h <= 0 or face in open_caps(c):
                     continue
                 pw, ph = max(1, int(round(w * TEX_SCALE))), max(1, int(round(h * TEX_SCALE)))
                 rects.append((c, face, w, h, pw, ph))
@@ -829,8 +837,9 @@ def anim_run():
         tracks[f"forearm_{s}"] = {"rotation": lambda t, off=off: [-8 + 30 * max(0.0, math.cos(P(t) + off)), 0, 0]}
         tracks[f"hand_{s}"] = {"rotation": lambda t, off=off: [-20 * math.sin(P(t) + off), 0, 0]}
         for i in range(4):
-            tracks[f"finger{i}a_{s}"] = {"rotation": lambda t, sgn=sgn: [-35, 0, sgn * -4]}
-            tracks[f"finger{i}b_{s}"] = {"rotation": lambda t, sgn=sgn: [-25, 0, 0]}
+            # curl about Z (the knuckle axis); pitching about X would swing neighbours into each other
+            tracks[f"finger{i}a_{s}"] = {"rotation": lambda t, sgn=sgn: [0, 0, sgn * 35]}
+            tracks[f"finger{i}b_{s}"] = {"rotation": lambda t, sgn=sgn: [0, 0, sgn * 30]}
     return "animation.werewolf.run", L, True, tracks
 
 

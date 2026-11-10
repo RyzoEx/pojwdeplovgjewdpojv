@@ -27,7 +27,7 @@
 
 ## Ассеты
 Модель, анимации и текстуры генерируются скриптом `tools/generate_werewolf.py`
-(49 костей, 143 куба, текстура 1024×256 — 4 px на юнит, per-face UV):
+(49 костей, 145 кубов, текстура 1024×256 — 4 px на юнит, per-face UV):
 
 ```
 pip install pillow numpy
@@ -37,6 +37,9 @@ python3 tools/generate_werewolf.py
 Результат лежит в `src/main/resources/assets/uncanny_werewolf/` (`geo/`, `animations/`,
 `textures/` + `werewolf_glowmask.png` для свечения глаз). Файлы открываются в Blockbench
 (GeckoLib Animated Model).
+
+Проверка геометрии (z-fighting, «плавающие» торцы у рваных кубов, перекрытия UV) в позе покоя
+и в каждом кадре всех анимаций: `python3 tools/check_mesh.py` (код возврата 1 при проблемах).
 
 ## Сборка и запуск
 ```

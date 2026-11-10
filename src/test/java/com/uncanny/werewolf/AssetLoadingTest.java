@@ -40,7 +40,7 @@ class AssetLoadingTest {
         collect(baked.topLevelBones(), all);
         assertEquals(49, all.size());
         int cubes = all.stream().mapToInt(b -> b.getCubes().size()).sum();
-        assertEquals(143, cubes);
+        assertEquals(145, cubes);
         assertTrue(all.stream().anyMatch(b -> b.getName().equals("head_look")));
         assertTrue(baked.getBone("jaw").isPresent());
     }
