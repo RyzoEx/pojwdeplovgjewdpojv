@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Uncanny Werewolf — preview</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #05070a; overflow: hidden; font-family: system-ui, sans-serif; }
+  #ui { position: absolute; top: 12px; left: 12px; display: flex; gap: 6px; flex-wrap: wrap; z-index: 2; }
+  #ui button { background: #1a1d22cc; color: #d8d2c8; border: 1px solid #3a3f47; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+  #ui button.active { background: #6b1d1d; border-color: #a33; }
+  #ui label { color: #aaa; font-size: 13px; display: flex; align-items: center; gap: 4px; margin-left: 8px; }
+  #title { position: absolute; bottom: 12px; left: 14px; color: #8a8178; font-size: 12px; letter-spacing: .1em; z-index: 2; }
+  body.capture #ui, body.capture #title { display: none; }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<div id="ui"></div>
+<div id="title">UNCANNY WEREWOLF · GeckoLib preview · geo + animation + texture from src/main/resources</div>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const ASSETS = '../src/main/resources/assets/uncanny_werewolf/';
+const params = new URLSearchParams(location.search);
+const capture = params.has('capture');
+if (capture) document.body.classList.add('capture');
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(capture ? 1 : devicePixelRatio);
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+const night = params.get('bg') !== 'studio';
+scene.background = new THREE.Color(night ? 0x0b1018 : 0x2a2d33);
+scene.fog = new THREE.Fog(scene.background, night ? 40 : 200, night ? 190 : 400);
+
+const camera = new THREE.PerspectiveCamera(32, innerWidth / innerHeight, 0.5, 1000);
+const controls = new OrbitControls(camera, renderer.domElement);
+const yaw = THREE.MathUtils.degToRad(parseFloat(params.get('yaw') ?? '-28'));
+const pitch = THREE.MathUtils.degToRad(parseFloat(params.get('pitch') ?? '6'));
+const dist = parseFloat(params.get('dist') ?? '115');
+const target = new THREE.Vector3(0, parseFloat(params.get('ty') ?? '25'), parseFloat(params.get('tz') ?? '-4'));
+camera.position.set(target.x + Math.sin(yaw) * Math.cos(pitch) * -dist, target.y + Math.sin(pitch) * dist, target.z - Math.cos(yaw) * Math.cos(pitch) * dist);
+controls.target.copy(target);
+controls.enableDamping = true;
+controls.update();
+
+scene.add(new THREE.HemisphereLight(night ? 0x8899bb : 0xffffff, night ? 0x2a2018 : 0x444444, night ? 1.25 : 1.2));
+const moon = new THREE.DirectionalLight(night ? 0xc8d6ff : 0xffffff, night ? 2.3 : 1.6);
+moon.position.set(-40, 90, -70);
+moon.castShadow = true;
+moon.shadow.mapSize.set(2048, 2048);
+Object.assign(moon.shadow.camera, { left: -60, right: 60, top: 80, bottom: -20, near: 1, far: 300 });
+scene.add(moon);
+const rim = new THREE.DirectionalLight(night ? 0x6a2a2a : 0xffffff, night ? 0.9 : 0.4);
+rim.position.set(50, 30, 60);
+scene.add(rim);
+
+// --- pixel-art ground and trees, so it reads as Minecraft ---------------------------------
+function pixelTexture(fn, size = 16) {
+  const c = document.createElement('canvas'); c.width = c.height = size;
+  const g = c.getContext('2d');
+  for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) { g.fillStyle = fn(x, y); g.fillRect(x, y, 1, 1); }
+  const t = new THREE.CanvasTexture(c);
+  t.magFilter = THREE.NearestFilter; t.minFilter = THREE.NearestFilter; t.colorSpace = THREE.SRGBColorSpace;
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  return t;
+}
+let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+const grass = pixelTexture(() => { const v = 0.75 + rnd() * 0.35; return `rgb(${48 * v | 0},${78 * v | 0},${38 * v | 0})`; });
+grass.repeat.set(40, 40);
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(640, 640), new THREE.MeshLambertMaterial({ map: grass }));
+ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true;
+scene.add(ground);
+if (night) {
+  const bark = pixelTexture(() => { const v = 0.7 + rnd() * 0.4; return `rgb(${58 * v | 0},${42 * v | 0},${28 * v | 0})`; });
+  const leaves = pixelTexture(() => rnd() < 0.15 ? 'rgba(0,0,0,0)' : (() => { const v = 0.6 + rnd() * 0.5; return `rgb(${22 * v | 0},${48 * v | 0},${26 * v | 0})`; })());
+  const barkM = new THREE.MeshLambertMaterial({ map: bark }), leafM = new THREE.MeshLambertMaterial({ map: leaves, alphaTest: 0.5 });
+  const spots = [[-70, -60], [60, -90], [-110, 20], [95, 10], [-30, -130], [20, -170], [130, -60], [-150, -80], [-60, 90], [80, 110]];
+  for (const [x, z] of spots) {
+    const h = 64 + rnd() * 48;
+    const trunk = new THREE.Mesh(new THREE.BoxGeometry(16, h, 16), barkM);
+    trunk.position.set(x, h / 2, z); trunk.castShadow = true; scene.add(trunk);
+    for (let i = 0; i < 3; i++) {
+      const s = 64 - i * 16;
+      const leaf = new THREE.Mesh(new THREE.BoxGeometry(s, 16, s), leafM);
+      leaf.position.set(x, h - 8 + i * 16, z); leaf.castShadow = true; scene.add(leaf);
+    }
+  }
+}
+
+// --- Bedrock geometry -> three.js, following Blockbench/GeckoLib conventions --------------
+// Bedrock X is mirrored; bone rotations use (-x, -y, z) in ZYX order.
+const DEG = Math.PI / 180;
+function faceGeometry(from, to, uv, tw, th) {
+  const [x0, y0, z0] = from, [x1, y1, z1] = to;
+  // corners per face: left-top, right-top, right-bottom, left-bottom as seen from outside
+  const faces = {
+    north: [[x1, y1, z0], [x0, y1, z0], [x0, y0, z0], [x1, y0, z0]],
+    south: [[x0, y1, z1], [x1, y1, z1], [x1, y0, z1], [x0, y0, z1]],
+    east:  [[x1, y1, z1], [x1, y1, z0], [x1, y0, z0], [x1, y0, z1]],
+    west:  [[x0, y1, z0], [x0, y1, z1], [x0, y0, z1], [x0, y0, z0]],
+    up:    [[x0, y1, z0], [x1, y1, z0], [x1, y1, z1], [x0, y1, z1]],
+    down:  [[x1, y0, z0], [x0, y0, z0], [x0, y0, z1], [x1, y0, z1]],
+  };
+  const pos = [], uvs = [], idx = [];
+  for (const [name, c] of Object.entries(faces)) {
+    const f = uv[name]; if (!f) continue;
+    const u0 = f.uv[0] / tw, v0 = 1 - f.uv[1] / th, u1 = (f.uv[0] + f.uv_size[0]) / tw, v1 = 1 - (f.uv[1] + f.uv_size[1]) / th;
+    const b = pos.length / 3;
+    for (const p of c) pos.push(...p);
+    uvs.push(u0, v0, u1, v0, u1, v1, u0, v1);
+    idx.push(b, b + 2, b + 1, b, b + 3, b + 2);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+  g.setIndex(idx);
+  g.computeVertexNormals();
+  return g;
+}
+
+function loadTex(url) {
+  return new Promise(res => new THREE.TextureLoader().load(url, t => {
+    t.magFilter = THREE.NearestFilter; t.minFilter = THREE.NearestFilter; t.generateMipmaps = false;
+    t.colorSpace = THREE.SRGBColorSpace; res(t);
+  }));
+}
+
+const [geoJson, animJson, tex, glow] = await Promise.all([
+  fetch(ASSETS + 'geo/entity/werewolf.geo.json').then(r => r.json()),
+  fetch(ASSETS + 'animations/entity/werewolf.animation.json').then(r => r.json()),
+  loadTex(ASSETS + 'textures/entity/werewolf.png'),
+  loadTex(ASSETS + 'textures/entity/werewolf_glowmask.png'),
+]);
+
+const geo = geoJson['minecraft:geometry'][0];
+const { texture_width: tw, texture_height: th } = geo.description;
+const material = new THREE.MeshLambertMaterial({
+  map: tex, alphaTest: 0.1, side: THREE.DoubleSide,
+  emissive: 0xffffff, emissiveMap: glow, emissiveIntensity: night ? 0.9 : 0.3,
+});
+const bones = {};
+const model = new THREE.Group();
+scene.add(model);
+for (const b of geo.bones) {
+  const g = new THREE.Group();
+  g.name = b.name;
+  const pv = new THREE.Vector3(-b.pivot[0], b.pivot[1], b.pivot[2]);
+  const parent = b.parent ? bones[b.parent] : null;
+  const ppv = parent ? parent.userData.pivot : new THREE.Vector3();
+  g.position.copy(pv).sub(ppv);
+  g.rotation.order = 'ZYX';
+  const r = b.rotation || [0, 0, 0];
+  g.userData = { pivot: pv, basePos: g.position.clone(), baseRot: new THREE.Vector3(-r[0] * DEG, -r[1] * DEG, r[2] * DEG) };
+  g.rotation.set(g.userData.baseRot.x, g.userData.baseRot.y, g.userData.baseRot.z);
+  for (const c of b.cubes || []) {
+    const from = [-(c.origin[0] + c.size[0]) - pv.x, c.origin[1] - pv.y, c.origin[2] - pv.z];
+    const to = [from[0] + c.size[0], from[1] + c.size[1], from[2] + c.size[2]];
+    const m = new THREE.Mesh(faceGeometry(from, to, c.uv, tw, th), material);
+    m.castShadow = true; m.receiveShadow = true;
+    g.add(m);
+  }
+  (parent || model).add(g);
+  bones[b.name] = g;
+}
+
+// --- animation playback (linear between keyframes, as the generator samples every tick) ---
+function sampleChannel(keys, t) {
+  const times = keys._times || (keys._times = Object.keys(keys).filter(k => k !== '_times').map(parseFloat).sort((a, b) => a - b).map(v => [v, keys[Object.keys(keys).find(k => parseFloat(k) === v)]]));
+  if (t <= times[0][0]) return times[0][1];
+  for (let i = 1; i < times.length; i++) {
+    if (t <= times[i][0]) {
+      const [ta, va] = times[i - 1], [tb, vb] = times[i];
+      const f = (t - ta) / (tb - ta);
+      return [0, 1, 2].map(j => va[j] + (vb[j] - va[j]) * f);
+    }
+  }
+  return times[times.length - 1][1];
+}
+function poseOf(name, t) {
+  const a = animJson.animations[name];
+  const tt = a.loop ? t % a.animation_length : Math.min(t, a.animation_length);
+  const pose = {};
+  for (const [bn, ch] of Object.entries(a.bones)) {
+    pose[bn] = {};
+    for (const [c, keys] of Object.entries(ch)) pose[bn][c] = sampleChannel(keys, tt);
+  }
+  return pose;
+}
+function applyPose(pose, prev, w) {
+  for (const [name, g] of Object.entries(bones)) {
+    const ud = g.userData;
+    const mix = (c, def) => {
+      const a = pose[name]?.[c] ?? def, b = prev ? (prev[name]?.[c] ?? def) : a;
+      return [0, 1, 2].map(i => b[i] + (a[i] - b[i]) * w);
+    };
+    const r = mix('rotation', [0, 0, 0]), p = mix('position', [0, 0, 0]), s = mix('scale', [1, 1, 1]);
+    g.rotation.set(ud.baseRot.x - r[0] * DEG, ud.baseRot.y - r[1] * DEG, ud.baseRot.z + r[2] * DEG);
+    g.position.set(ud.basePos.x - p[0], ud.basePos.y + p[1], ud.basePos.z + p[2]);
+    g.scale.set(s[0], s[1], s[2]);
+  }
+}
+
+const ANIMS = { idle: 'animation.werewolf.idle', walk: 'animation.werewolf.walk', run: 'animation.werewolf.run', attack: 'animation.werewolf.attack', stare: 'animation.werewolf.stare' };
+const LABELS = { idle: 'Idle', walk: 'Walk', run: 'Run (на четвереньках)', attack: 'Attack', stare: 'Stare (когда на него смотрят)' };
+let current = params.get('anim') || 'idle', prevPose = null, animStart = 0, blendStart = -1;
+let speed = 1, autorotate = !capture && params.get('rotate') !== '0';
+const ui = document.getElementById('ui');
+for (const k of Object.keys(ANIMS)) {
+  const btn = document.createElement('button'); btn.textContent = LABELS[k]; btn.dataset.k = k;
+  btn.onclick = () => play(k); ui.appendChild(btn);
+}
+const rot = document.createElement('label'); rot.innerHTML = '<input type="checkbox"> вращать';
+rot.querySelector('input').checked = autorotate; rot.querySelector('input').onchange = e => autorotate = e.target.checked;
+ui.appendChild(rot);
+const clock = new THREE.Clock();
+let now = 0;
+function play(k) {
+  prevPose = poseOf(ANIMS[current], now - animStart);
+  current = k; animStart = now; blendStart = now;
+  for (const b of ui.querySelectorAll('button')) b.classList.toggle('active', b.dataset.k === k);
+}
+play(current); prevPose = null; blendStart = -1;
+
+const fixedT = params.has('t') ? parseFloat(params.get('t')) : null;
+function frame(t) {
+  const name = ANIMS[current];
+  const local = t - animStart;
+  const w = blendStart < 0 ? 1 : Math.min(1, (t - blendStart) / 0.2);
+  applyPose(poseOf(name, local), w < 1 ? prevPose : null, w);
+  if (!animJson.animations[name].loop && local > animJson.animations[name].animation_length + 0.6) play('idle');
+}
+window.renderAt = (t, yawDeg) => {  // used by the capture script
+  if (yawDeg !== undefined) model.rotation.y = yawDeg * DEG;
+  frame(t); renderer.render(scene, camera);
+};
+if (fixedT !== null) { frame(fixedT); renderer.render(scene, camera); }
+window.__ready = true;
+if (!capture) {
+  renderer.setAnimationLoop(() => {
+    const dt = clock.getDelta();
+    now += dt * speed;
+    if (autorotate) model.rotation.y += dt * 0.35;
+    frame(now);
+    controls.update();
+    renderer.render(scene, camera);
+  });
+}
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight);
+});
+</script>
+</body>
+</html>

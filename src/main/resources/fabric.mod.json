@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "id": "uncanny_werewolf",
+  "version": "${version}",
+  "name": "Uncanny Werewolf",
+  "description": "A starved, far-too-human werewolf. Don't look at it. Don't look away.",
+  "authors": ["kfdhkh"],
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["com.uncanny.werewolf.WerewolfMod"],
+    "client": ["com.uncanny.werewolf.client.WerewolfModClient"]
+  },
+  "depends": {
+    "fabricloader": ">=0.15.0",
+    "minecraft": "~1.20.1",
+    "java": ">=17",
+    "fabric-api": "*",
+    "geckolib": ">=4.4"
+  }
+}
